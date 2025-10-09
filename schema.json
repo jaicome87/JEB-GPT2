@@ -1,0 +1,42 @@
+# ============================================================
+#  JEB CMP Estimator � Electron Build Script
+# ============================================================
+
+Write-Host "?? Starting Electron build for JEB CMP Estimator..." -ForegroundColor Cyan
+
+# 1?? Change to project directory
+Set-Location "C:\Users\jakes\Jaspin Co. Dropbox\Jake Spinella\_Software Development\JEB-A3"
+
+# 2?? Clean old builds
+if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
+if (Test-Path "dist_electron") { Remove-Item -Recurse -Force "dist_electron" }
+Write-Host "?? Old build folders removed."
+
+# 3?? Build Vite app
+Write-Host "?? Building Vite project..."
+npm run build
+
+# 4?? Package Electron app
+Write-Host "?? Packaging Electron executable..."
+npm run electron:build
+
+# 5?? Find generated EXE
+$exePath = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse | Select-Object -First 1
+
+if ($null -eq $exePath) {
+    Write-Host "? No EXE found. Check your electron-builder output." -ForegroundColor Red
+    exit 1
+}
+
+# 6?? Zip it up
+$zipName = "JEB_Estimator.exe.zip"
+$zipPath = Join-Path (Get-Location) $zipName
+
+Write-Host "??? Creating zip archive..."
+Compress-Archive -Path $exePath.FullName -DestinationPath $zipPath -Force
+
+Write-Host "? Build Complete!"
+Write-Host "Executable: $($exePath.FullName)"
+Write-Host "Archive: $zipPath"
+Write-Host "---------------------------------------------------"
+Write-Host "You can now share or store your installer zip file." -ForegroundColor Green
