@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JEB CMP Estimator v2 Schema (starter)",
+  "type": "object",
+  "properties": {
+    "walls": {
+      "type": "object",
+      "properties": {
+        "qty_lm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height_frame_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stud": {
+          "type": "object",
+          "properties": {
+            "width_mm": {
+              "type": "number"
+            },
+            "bmt_mm": {
+              "type": "number"
+            },
+            "spacing_mm": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "width_mm",
+            "bmt_mm",
+            "spacing_mm"
+          ]
+        },
+        "lining_a": {
+          "type": "object",
+          "properties": {
+            "height_m": {
+              "type": "number"
+            },
+            "spec": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "height_m",
+            "spec",
+            "count"
+          ]
+        },
+        "lining_b": {
+          "type": "object",
+          "properties": {
+            "height_m": {
+              "type": "number"
+            },
+            "spec": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "height_m",
+            "spec",
+            "count"
+          ]
+        },
+        "insulation": {
+          "type": "string"
+        },
+        "access_hoisting": {
+          "type": "string",
+          "enum": [
+            "good",
+            "average",
+            "poor",
+            "easy",
+            "moderate",
+            "difficult"
+          ]
+        },
+        "applied_factor_pct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "qty_lm",
+        "height_frame_m",
+        "stud",
+        "lining_a",
+        "lining_b"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "x-aliasMap": {
+    "walls.qty_lm": "WALL QTY (lm)",
+    "walls.height_frame_m": "FRAME HEIGHT (m)",
+    "walls.stud.width_mm": "STUD WIDTH (mm)",
+    "walls.stud.bmt_mm": "STUD BMT (mm)",
+    "walls.stud.spacing_mm": "STUD SPACING (mm)",
+    "walls.lining_a.height_m": "LINING - SIDE A HEIGHT (m)",
+    "walls.lining_a.spec": "LINING - SIDE A (spec)",
+    "walls.lining_a.count": "LINING - SIDE A (count)",
+    "walls.lining_b.height_m": "LINING - SIDE B HEIGHT (m)",
+    "walls.lining_b.spec": "LINING - SIDE B (spec)",
+    "walls.lining_b.count": "LINING - SIDE B (count)",
+    "walls.insulation": "INSULATION (spec)",
+    "walls.access_hoisting": "ACCESS / HOISTING (Good, Average, Poor)",
+    "walls.applied_factor_pct": "APPLIED FACTOR - SPECIFY (%)"
+  }
+}

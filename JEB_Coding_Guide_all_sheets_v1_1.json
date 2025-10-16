@@ -1,0 +1,2467 @@
+{
+  "GUIDE": [
+    {
+      "FIELD": "Wall_ID",
+      "TYPE": "Text",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "Unique wall identifier"
+    },
+    {
+      "FIELD": "Wall_Type",
+      "TYPE": "Text",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "Drawing wall code used for schedules"
+    },
+    {
+      "FIELD": "Wall_Length_m",
+      "TYPE": "Number",
+      "UNIT": "m",
+      "SOURCE": "User",
+      "DESCRIPTION": "Wall run length measured centreline"
+    },
+    {
+      "FIELD": "Wall_Height_m",
+      "TYPE": "Number",
+      "UNIT": "m",
+      "SOURCE": "User",
+      "DESCRIPTION": "Clear structural height for stud selection"
+    },
+    {
+      "FIELD": "Stud_Size_mm",
+      "TYPE": "Number",
+      "UNIT": "mm",
+      "SOURCE": "Rates Default/User",
+      "DESCRIPTION": "51/64/76/92/150 etc."
+    },
+    {
+      "FIELD": "Stud_Gauge_BMT",
+      "TYPE": "Number",
+      "UNIT": "BMT",
+      "SOURCE": "Rates Default/User",
+      "DESCRIPTION": "0.50/0.55/0.70/0.75/1.15; 0.55\u21920.50 rule applies"
+    },
+    {
+      "FIELD": "Stud_Spacing_mm",
+      "TYPE": "Number",
+      "UNIT": "mm",
+      "SOURCE": "User",
+      "DESCRIPTION": "Typically 600 unless noted; 450 for high/acoustic"
+    },
+    {
+      "FIELD": "Noggin_Centres_mm",
+      "TYPE": "Number",
+      "UNIT": "mm",
+      "SOURCE": "User",
+      "DESCRIPTION": "Blank for none; else 450/600 (rows auto-computed)"
+    },
+    {
+      "FIELD": "Use_Deflection_Head",
+      "TYPE": "Yes/No",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "If Yes, top track uses DEF HEAD rate"
+    },
+    {
+      "FIELD": "Deflection_Slotted",
+      "TYPE": "Yes/No",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "If Yes, use SLOTTED DEF HEAD rate variant"
+    },
+    {
+      "FIELD": "Sheet_Type",
+      "TYPE": "Enum",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "Standard or Non-Standard (affects Hang rate)"
+    },
+    {
+      "FIELD": "Labour_Level",
+      "TYPE": "Enum",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "Low / Medium / High"
+    },
+    {
+      "FIELD": "Hoisting_Access",
+      "TYPE": "Enum",
+      "UNIT": "-",
+      "SOURCE": "User",
+      "DESCRIPTION": "Easy / Moderate / Difficult"
+    }
+  ],
+  "INPUTS": [
+    {
+      "Wall_ID": "W-001",
+      "Wall_Type": "IW-01",
+      "Wall_Length_m": 12.35,
+      "Wall_Height_m": 3.2,
+      "Stud_Size_mm": 64,
+      "Stud_Gauge_BMT": 0.55,
+      "Stud_Spacing_mm": 600,
+      "Noggin_Centres_mm": 600,
+      "Use_Deflection_Head": "Yes",
+      "Deflection_Slotted": "No",
+      "Sheet_Type": "Standard",
+      "Labour_Level": "Medium",
+      "Hoisting_Access": "Moderate"
+    }
+  ],
+  "PARAMS": [
+    {
+      "PARAM": "LOW_WALL_MAX_M",
+      "VALUE": 3,
+      "NOTES": "Max height for 'Low' wall class (m)"
+    },
+    {
+      "PARAM": "MED_WALL_MAX_M",
+      "VALUE": 4.2,
+      "NOTES": "Max height for 'Medium' wall class (m). Above this = High"
+    },
+    {
+      "PARAM": "STUD_STOCK_LENGTHS_MM",
+      "VALUE": "2400,2700,3000,3600,4200,4800",
+      "NOTES": "Available stud stock lengths (choose next >= height)"
+    },
+    {
+      "PARAM": "BMT_NORMALIZE_FROM",
+      "VALUE": 0.55,
+      "NOTES": "Normalize this BMT..."
+    },
+    {
+      "PARAM": "BMT_NORMALIZE_TO",
+      "VALUE": 0.5,
+      "NOTES": "...to this BMT in lookups"
+    }
+  ],
+  "FORMULAS": [
+    {
+      "NAME": "WallClass",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Classify wall as Low/Medium/High by height thresholds (PARAMS)."
+    },
+    {
+      "NAME": "GaugeClass",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Labour frame rate switches between Heavy vs Light&Medium."
+    },
+    {
+      "NAME": "BMT_Normalized",
+      "EXCEL_FORMULA": null,
+      "NOTES": "0.55 \u2192 0.50 normalization before material lookups."
+    },
+    {
+      "NAME": "Stud_StockLen_mm",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Choose next stock length >= wall height (requires 365 functions)."
+    },
+    {
+      "NAME": "Stud_Count",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Count of studs incl. both ends."
+    },
+    {
+      "NAME": "Stud_Item_Key",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Exact key matching RATES[ITEM] for studs."
+    },
+    {
+      "NAME": "Stud_Rate_lm",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Lookup $/lm for the stud selection."
+    },
+    {
+      "NAME": "Stud_LM",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Total stud linear metres."
+    },
+    {
+      "NAME": "Stud_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Stud material cost."
+    },
+    {
+      "NAME": "Track_Bottom_Item_Key",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Bottom track key."
+    },
+    {
+      "NAME": "Track_Top_Item_Key",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Top uses DEF HEAD (or SLOTTED) else regular TRACK."
+    },
+    {
+      "NAME": "Track_Bottom_Rate_lm",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Rate lookup."
+    },
+    {
+      "NAME": "Track_Top_Rate_lm",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Rate lookup."
+    },
+    {
+      "NAME": "Track_Bottom_LM",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Bottom track equals wall length."
+    },
+    {
+      "NAME": "Track_Top_LM",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Top track equals wall length."
+    },
+    {
+      "NAME": "Track_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Total track cost."
+    },
+    {
+      "NAME": "Noggin_Rows",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Number of noggin rows (excludes top/bottom)."
+    },
+    {
+      "NAME": "Noggin_Item_Key",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Matches RATES item text."
+    },
+    {
+      "NAME": "Noggin_Rate_lm",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Rate lookup."
+    },
+    {
+      "NAME": "Noggin_LM",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Total noggin track LM."
+    },
+    {
+      "NAME": "Noggin_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Noggin material cost."
+    },
+    {
+      "NAME": "Area_m2",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Gross wall area."
+    },
+    {
+      "NAME": "Hang_Rate_m2",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Hang labour rate."
+    },
+    {
+      "NAME": "Stop_Rate_m2",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Stop & sand labour rate."
+    },
+    {
+      "NAME": "Frame_Rate_m2",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Frame labour rate based on class & gauge."
+    },
+    {
+      "NAME": "Hoist_Rate_m2",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Hoisting rate."
+    },
+    {
+      "NAME": "Hang_Labour_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Calculated $."
+    },
+    {
+      "NAME": "Stop_Labour_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Calculated $."
+    },
+    {
+      "NAME": "Frame_Labour_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Calculated $."
+    },
+    {
+      "NAME": "Hoist_Labour_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Calculated $."
+    },
+    {
+      "NAME": "Material_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Sum of materials."
+    },
+    {
+      "NAME": "Labour_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Sum of labour elements."
+    },
+    {
+      "NAME": "Total_Cost_$",
+      "EXCEL_FORMULA": null,
+      "NOTES": "Grand total for wall."
+    }
+  ],
+  "RATES": [
+    {
+      "ITEM": "LABOUR - WALL FRAMING, SHEETING, SETTING, HOISTING MATERIAL",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "Hoisting Sheets - Easy Access",
+      "RATE PER UOM": 1.466049382716049,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Hoisting Sheets - Moderate Access",
+      "RATE PER UOM": 2.443415637860082,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Hoisting Sheets - Difficult Access",
+      "RATE PER UOM": 3.665123456790123,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang - Standard - Low",
+      "RATE PER UOM": 14.16666666666667,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang Non-Standard - Low",
+      "RATE PER UOM": 17.70833333333334,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Stop & Sand - Low",
+      "RATE PER UOM": 19.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang - Standard - Medium",
+      "RATE PER UOM": 17.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang Non-Standard - Medium",
+      "RATE PER UOM": 21.25,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Stop & Sand - Medium",
+      "RATE PER UOM": 22.79999999999999,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang - Standard - High",
+      "RATE PER UOM": 20.4,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Hang Non-Standard - High",
+      "RATE PER UOM": 25.5,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Stop & Sand - High",
+      "RATE PER UOM": 27.35999999999999,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Square Set/P50/External",
+      "RATE PER UOM": 10.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour Internal or External Angle Beading",
+      "RATE PER UOM": 14.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame Low Wall, Light & Medium Gauge",
+      "RATE PER UOM": 14.16666666666667,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame Low Wall, Heavy Gauge",
+      "RATE PER UOM": 19.83333333333334,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame Medium Wall, Light & Medium Gauge",
+      "RATE PER UOM": 18.41666666666667,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame Medium Wall, Heavy Gauge",
+      "RATE PER UOM": 25.78333333333334,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame High Wall, Light & Medium Gauge",
+      "RATE PER UOM": 23.94166666666667,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Labour - Frame High Wall, Heavy Gauge",
+      "RATE PER UOM": 33.51833333333334,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "WALL TRACK",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "51mm TRACK @ 3000mm 0.55 BMT            ",
+      "RATE PER UOM": 6.29,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm TRACK @ 3000mm  0.70 BMT           ",
+      "RATE PER UOM": 9.48,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm HEMMED TRACK @ 3000mm  0.50 BMT    ",
+      "RATE PER UOM": 6.05,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm HEMMED TRACK 3000mm 0.70 BMT       ",
+      "RATE PER UOM": 10.72,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm TRACK @ 3000mm - 1.15 BMT          ",
+      "RATE PER UOM": 12.74,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm HEMMED TRACK @ 3000mm  0.50 BMT    ",
+      "RATE PER UOM": 6.75,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm HEMMED TRACK @ 3000mm  0.70 BMT    ",
+      "RATE PER UOM": 11.37,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm TRACK @ 3000mm - 1.15 BMT          ",
+      "RATE PER UOM": 14.0,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm HEMMED TRACK 3000  0.50 BMT        ",
+      "RATE PER UOM": 7.96,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm HEMMED TRACK 3000  0.70 BMT        ",
+      "RATE PER UOM": 12.66,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm TRACK 3000 - 1.15 BMT              ",
+      "RATE PER UOM": 15.47,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm TRACK @ 3000mm - 1.15 BMT         ",
+      "RATE PER UOM": 36.18,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm TRACK @ 3000mm - .75 BMT          ",
+      "RATE PER UOM": 19.09,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm EZY TRACK X 2400 FLEXIBLE          ",
+      "RATE PER UOM": 46.33,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm EZY TRACK X 2400 FLEXIBLE          ",
+      "RATE PER UOM": 48.47,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm EZY TRACK X 2400 FLEXIBLE          ",
+      "RATE PER UOM": 54.28,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm EZY TRACK @ 2400 FLEXIBLE          ",
+      "RATE PER UOM": 49.74,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "ANGLE 35 x 35 x 3600   0.75 BMT         ",
+      "RATE PER UOM": 7.88,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "NOGGIN TRACK",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "No Noggin",
+      "RATE PER UOM": 0.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "51mm NOGGIN TRACK .75 BMT @ 450 CENTRES ",
+      "RATE PER UOM": 17.4,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm NOGGIN TRACK .75 BMT @ 600 CENTRES ",
+      "RATE PER UOM": 17.21,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm NOGGIN TRACK 0.75BMT @ 450 CENTRES ",
+      "RATE PER UOM": 17.4,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm NOGGIN TRACK 0.75 BMT @ 600 CENTRES",
+      "RATE PER UOM": 17.21,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm NOGGIN TRACK 0.75 BMT @ 450 CENTRES",
+      "RATE PER UOM": 18.49,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm NOGGIN TRACK 0.75 BMT @ 600 CENTRES",
+      "RATE PER UOM": 18.32,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm NOGGIN TRACK 0.75 BMT @ 450 CENTRES",
+      "RATE PER UOM": 19.42,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm NOGGIN TRACK 0.75 BMT @ 600 CENTRES",
+      "RATE PER UOM": 19.25,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm NOGGIN TRACK .75 BMT @ 450 CENTRES",
+      "RATE PER UOM": 27.62,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm NOGGIN TRACK .75 BMT @ 600 CENTRES",
+      "RATE PER UOM": 27.43,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "DEFLECTION HEAD TRACK",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "51mm DEF HEAD TRACK @ 3000 0.75 BMT     ",
+      "RATE PER UOM": 11.07,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm DEF HEAD TRACK @ 3000 1.15 BMT     ",
+      "RATE PER UOM": 21.75,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm DEF HEAD TRACK @ 3000 0.55 BMT     ",
+      "RATE PER UOM": 9.71,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm DEF HEAD TRACK @ 3000 0.70 BMT     ",
+      "RATE PER UOM": 12.24,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm DEF HEAD TRACK @ 3000 1.15 BMT     ",
+      "RATE PER UOM": 23.7,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm DEF HEAD TRACK @ 3000 0.55 BMT     ",
+      "RATE PER UOM": 10.27,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm DEF HEAD TRACK @ 3000 0.70 BMT     ",
+      "RATE PER UOM": 12.92,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm DEF HEAD TRACK @ 3000 1.15 BMT     ",
+      "RATE PER UOM": 25.71,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm DEF HEAD TRACK @ 3000 0.55 BMT     ",
+      "RATE PER UOM": 11.27,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm DEF HEAD TRACK @ 3000 0.70 BMT     ",
+      "RATE PER UOM": 14.08,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm SLOTTED DEF HEAD @ 3000 1.15 BMT   ",
+      "RATE PER UOM": 29.21,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm SLOTTED DEF HEAD @ 3000 0.70 BMT   ",
+      "RATE PER UOM": 24.97,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm SLOTTED DEF HEAD @ 3000 1.15 BMT   ",
+      "RATE PER UOM": 37.71,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm SLOTTED DEF HEAD @ 3000 0.70 BMT   ",
+      "RATE PER UOM": 31.33,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm SLOTTED DEF HEAD @ 3000 1.15 BMT   ",
+      "RATE PER UOM": 41.06,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm SLOTTED DEF HEAD  @ 3000 0.70 BMT  ",
+      "RATE PER UOM": 34.29,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm SLOTTED DEF HEAD @ 3000 1.15 BMT  ",
+      "RATE PER UOM": 52.41,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm DEF HEAD TRACK @ 3000 1.15 BMT    ",
+      "RATE PER UOM": 37.63,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm DEF HEAD TRACK @ 3000 0.75 BMT    ",
+      "RATE PER UOM": 20.96,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "100x100x3000 X 1.15BMT FACADE ANGLE     ",
+      "RATE PER UOM": 30.79,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "50 x 50 x 3600 x 1.15 BMT FACADE ANGLE  ",
+      "RATE PER UOM": 12.46,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "50 x 50 x 3600 x .75BMT FACADE ANGLE    ",
+      "RATE PER UOM": 11.32,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75 x 75 x 3000 x 1.15 BMT FACADE ANGLE  ",
+      "RATE PER UOM": 23.98,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75  x 75 x 3000 x .75BMT FACADE ANGLE   ",
+      "RATE PER UOM": 16.84,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "ANGLE 30 x 30 x 3000   .55 BMT          ",
+      "RATE PER UOM": 4.34,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "STUDS",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "51mm STUD @ 2400 - 0.55 BMT             ",
+      "RATE PER UOM": 5.9,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 2700 - 0.55 BMT             ",
+      "RATE PER UOM": 6.64,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 2700 - 0.75 BMT             ",
+      "RATE PER UOM": 9.73,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 3000 - 0.55 BMT             ",
+      "RATE PER UOM": 7.38,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 3000 - 0.75 BMT             ",
+      "RATE PER UOM": 10.8,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 3600 - 0.55 BMT             ",
+      "RATE PER UOM": 8.86,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "51mm STUD @ 3600 - 0.75 BMT             ",
+      "RATE PER UOM": 12.97,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 2400 - 0.55 BMT             ",
+      "RATE PER UOM": 5.15,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 2400 - 0.75 BMT             ",
+      "RATE PER UOM": 9.29,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 2700 - 1.15 BMT             ",
+      "RATE PER UOM": 13.58,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 2700 - 0.55 BMT             ",
+      "RATE PER UOM": 5.79,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 2700 - 0.75 BMT             ",
+      "RATE PER UOM": 10.46,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3000 - 1.15 BMT             ",
+      "RATE PER UOM": 15.09,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3000 - 0.55 BMT             ",
+      "RATE PER UOM": 6.44,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3000 - 0.75 BMT             ",
+      "RATE PER UOM": 11.62,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3600 - 1.15 BMT             ",
+      "RATE PER UOM": 18.11,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3600 - 0.55 BMT             ",
+      "RATE PER UOM": 7.71,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 3600 - 0.75 BMT             ",
+      "RATE PER UOM": 13.94,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4200 - 1.15 BMT             ",
+      "RATE PER UOM": 21.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4200 - 0.55 BMT             ",
+      "RATE PER UOM": 9.01,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4200 - 0.75 BMT             ",
+      "RATE PER UOM": 16.26,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4800 - 1.15 BMT              ",
+      "RATE PER UOM": 24.14,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4800 - 0.50 BMT             ",
+      "RATE PER UOM": 10.3,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 4800 - 0.75 BMT             ",
+      "RATE PER UOM": 18.59,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 6000 - 1.15 BMT             ",
+      "RATE PER UOM": 30.18,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "64mm STUD @ 6000 - 0.75 BMT             ",
+      "RATE PER UOM": 23.23,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 2400 - 0.55 BMT             ",
+      "RATE PER UOM": 6.59,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 2700 - 1.15 BMT             ",
+      "RATE PER UOM": 14.54,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 2700 - 0.55 BMT             ",
+      "RATE PER UOM": 7.41,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 2700 - 0.75 BMT             ",
+      "RATE PER UOM": 11.31,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 3000 - 1.15 BMT             ",
+      "RATE PER UOM": 16.17,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 3000 - 0.55 BMT             ",
+      "RATE PER UOM": 8.24,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm  STUD @ 3000 - 0.75 BMT            ",
+      "RATE PER UOM": 12.56,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 3600 - 1.15 BMT             ",
+      "RATE PER UOM": 19.4,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 3600 - 0.55 BMT             ",
+      "RATE PER UOM": 9.89,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 3600 - 0.75 BMT             ",
+      "RATE PER UOM": 15.07,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4200 - 1.15 BMT             ",
+      "RATE PER UOM": 22.63,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4200 - 0.55 BMT             ",
+      "RATE PER UOM": 11.54,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4200 - 0.75 BMT             ",
+      "RATE PER UOM": 17.58,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4800 - 1.15 BMT             ",
+      "RATE PER UOM": 25.86,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4800 - 0.55 BMT             ",
+      "RATE PER UOM": 13.19,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 4800 - 0.75 BMT             ",
+      "RATE PER UOM": 20.09,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 6000 - 1.15 BMT             ",
+      "RATE PER UOM": 32.33,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 6000 - 0.55 BMT             ",
+      "RATE PER UOM": 16.48,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "76mm STUD @ 6000 - 0.75 BMT             ",
+      "RATE PER UOM": 25.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 2400 - 0.55 BMT             ",
+      "RATE PER UOM": 7.44,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 2400 - 0.75 BMT             ",
+      "RATE PER UOM": 11.09,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 2700 - 1.15 BMT             ",
+      "RATE PER UOM": 16.08,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 2700 - 0.55 BMT             ",
+      "RATE PER UOM": 8.37,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 2700 - 0.75 BMT             ",
+      "RATE PER UOM": 12.48,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3000 - 1.15 BMT             ",
+      "RATE PER UOM": 17.87,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3000 - 0.55 BMT             ",
+      "RATE PER UOM": 9.3,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3000 - 0.75 BMT             ",
+      "RATE PER UOM": 13.86,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3600 - 1.15 BMT             ",
+      "RATE PER UOM": 21.44,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3600 - 0.55 BMT             ",
+      "RATE PER UOM": 11.16,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 3600 - 0.75 BMT             ",
+      "RATE PER UOM": 16.63,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4200 - 1.15 BMT             ",
+      "RATE PER UOM": 25.02,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4200 - 0.55 BMT             ",
+      "RATE PER UOM": 13.02,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4200 - 0.75 BMT             ",
+      "RATE PER UOM": 19.41,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4800 - 1.15 BMT             ",
+      "RATE PER UOM": 28.58,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4800 - 0.55 BMT             ",
+      "RATE PER UOM": 14.88,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 4800 - 0.75 BMT             ",
+      "RATE PER UOM": 22.19,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 6000 - 1.15 BMT             ",
+      "RATE PER UOM": 35.74,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 6000 - 0.55 BMT             ",
+      "RATE PER UOM": 18.6,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 6000 - 0.75 BMT             ",
+      "RATE PER UOM": 27.73,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "92mm STUD @ 7200 - 1.15 BMT             ",
+      "RATE PER UOM": 42.89,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 3000 - 0.75 BMT            ",
+      "RATE PER UOM": 23.71,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 3600 - 1.15 BMT            ",
+      "RATE PER UOM": 43.54,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 3600 - 0.75 BMT            ",
+      "RATE PER UOM": 28.5,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 4200 - 1.15 BMT            ",
+      "RATE PER UOM": 50.79,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 4200 - 0.75 BMT            ",
+      "RATE PER UOM": 33.24,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 4800 - 1.15 BMT            ",
+      "RATE PER UOM": 58.05,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 4800 - 0.75 BMT            ",
+      "RATE PER UOM": 37.99,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 6000 - 1.15 BMT            ",
+      "RATE PER UOM": 72.57,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 6000 - 0.75 BMT            ",
+      "RATE PER UOM": 47.49,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 7200 - 1.15 BMT            ",
+      "RATE PER UOM": 87.09,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "150mm STUD @ 7200 - 0.75 BMT            ",
+      "RATE PER UOM": 56.98,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm FURRING CHANNEL @ 2700             ",
+      "RATE PER UOM": 4.93,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm FURRING CHANNEL @ 3000             ",
+      "RATE PER UOM": 1.83,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm FURRING CHANNEL @ 3600             ",
+      "RATE PER UOM": 1.83,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm FURRING CHANNEL @ 4800             ",
+      "RATE PER UOM": 1.82,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm FURRING CHANNEL @ 6000             ",
+      "RATE PER UOM": 1.82,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm FURRING CHANNEL @ 2700             ",
+      "RATE PER UOM": 2.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm FURRING CHANNEL @ 3000             ",
+      "RATE PER UOM": 2.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm FURRING CHANNEL @ 3600             ",
+      "RATE PER UOM": 2.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm FURRING CHANNEL @ 4800             ",
+      "RATE PER UOM": 2.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm FURRING CHANNEL @ 6000             ",
+      "RATE PER UOM": 2.12,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "13mm RECESSED FURRING CHANNEL @ 3000    ",
+      "RATE PER UOM": 2.99,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "13mm RECESSED FURRING CHANNEL @ 6000    ",
+      "RATE PER UOM": 2.99,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "25mm TOP CROSS RAIL X 3600 0.75 BMT     ",
+      "RATE PER UOM": 2.37,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "25mm TOP CROSS RAIL X 4800 0.75 BMT     ",
+      "RATE PER UOM": 2.37,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "25mm TOP CROSS RAIL X 6000 0.75 BMT     ",
+      "RATE PER UOM": 2.36,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "38mm TOP CROSS RAIL X 4800 0.75 BMT     ",
+      "RATE PER UOM": 3.75,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "16mm J WALL TRACK X 3000mm              ",
+      "RATE PER UOM": 1.96,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm J WALL TRACK X 3000mm              ",
+      "RATE PER UOM": 1.96,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "28mm J WALL TRACK X 3600mm              ",
+      "RATE PER UOM": 1.96,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "QUIET STUD 92mm X 2700 X .55BMT         ",
+      "RATE PER UOM": 6.03,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "QUIET STUD 92mm X 3000 X .55BMT         ",
+      "RATE PER UOM": 6.03,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "QUIET STUD 92mm X 3600 X .55BMT         ",
+      "RATE PER UOM": 6.03,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "QUIET STUD 92mm X 4200 X .55BMT         ",
+      "RATE PER UOM": 6.03,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "QUIET STUD 92mm X 4800 X .55BMT         ",
+      "RATE PER UOM": 6.03,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 120 x 35 x 1.15 BMT @ 6000",
+      "RATE PER UOM": 9.92,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 15 x 1.15 BMT @ 3600 ",
+      "RATE PER UOM": 4.68,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 15 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 4.68,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 25 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 6.88,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 35 x 1.15 BMT @ 3600 ",
+      "RATE PER UOM": 6.65,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 35 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 6.65,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 35 x 0.75 BMT @ 3600 ",
+      "RATE PER UOM": 3.88,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 35 x 0.75 BMT @ 6000 ",
+      "RATE PER UOM": 4.56,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 50 x 50 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 7.78,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 24 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 7.26,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 24 x 0.75 BMT @ 6000 ",
+      "RATE PER UOM": 4.51,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 35 x 1.15 BMT @ 3600 ",
+      "RATE PER UOM": 7.99,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 35 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 7.98,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 35 x 0.75 BMT @ 3600 ",
+      "RATE PER UOM": 4.58,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "JUNCTION STUD 75 x 50 x 1.15 BMT @ 6000 ",
+      "RATE PER UOM": 9.19,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "PLASTER LININGS",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "No Lining",
+      "RATE PER UOM": 0.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "6.5mm RE Gyprock Flexible Plasterboard",
+      "RATE PER UOM": 11.8,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "10mm RE Gyprock Plasterboard (inc. RE/SE)",
+      "RATE PER UOM": 5.95,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "10mm RE Gyprock Supaceil",
+      "RATE PER UOM": 6.6,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "10mm RE Gyprock Aquachek",
+      "RATE PER UOM": 9.5,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "10mm RE Gyprock Soundchek",
+      "RATE PER UOM": 12.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE Gyprock Plasterboard (RE)",
+      "RATE PER UOM": 5.95,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE Gyprock Aquachek",
+      "RATE PER UOM": 10.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE Gyprock Soundchek",
+      "RATE PER UOM": 13.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE Gyprock Fyrchek",
+      "RATE PER UOM": 9.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "16mm RE Gyprock Fyrchek",
+      "RATE PER UOM": 10.6,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE Gyprock Fyrchek MR",
+      "RATE PER UOM": 15.5,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "16mm RE Gyprock Fyrchek MR",
+      "RATE PER UOM": 18.4,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "25mm BE Gyprock Shaft Liner MP Panels",
+      "RATE PER UOM": 20.6,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "12.5mm Gyptone Perforated Plasterboard Various Patterns",
+      "RATE PER UOM": 73.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "12.5mm Rigitone Perforated Plasterboard Various Patterns",
+      "RATE PER UOM": 102.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "13mm RE EC08 Complete",
+      "RATE PER UOM": 16.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "16mm RE EC08 Complete",
+      "RATE PER UOM": 20.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "6mm Ceminseal Wallboard - Recessed Edge",
+      "RATE PER UOM": 10.5,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "9mm Ceminseal Wallboard - Recessed Edge",
+      "RATE PER UOM": 17.9,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "12mm Ceminseal Wallboard - Recessed Edge",
+      "RATE PER UOM": 31.85,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "6mm Ceminseal Wallboard - Square Edge",
+      "RATE PER UOM": 14.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "9mm Ceminseal Wallboard - Square Edge",
+      "RATE PER UOM": 23.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "9mm compressed Commercial ExpressWall 1200's",
+      "RATE PER UOM": 48.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "Ceminseal BareStone (Original) Panel",
+      "RATE PER UOM": 85.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "7.5mm Texture Base Sheet 1200's",
+      "RATE PER UOM": 14.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "4.5mm Eaves Lining/Fibro Cem",
+      "RATE PER UOM": 10.3,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "4.5mm Cladding Sheet/Fibro Cem",
+      "RATE PER UOM": 9.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "3601 x 1200mm 6mm RE Ceminseal Soffit Cem",
+      "RATE PER UOM": 21.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "6mm Cladding Sheet/Fibro Cem",
+      "RATE PER UOM": 16.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "8mm Mosaic Residential Fa\u00e7ade",
+      "RATE PER UOM": 35.0,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "CEILING GRID & TILES",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "ALU SHADOWLINE WALL ANGLE X 3600. NEW   ",
+      "RATE PER UOM": 16.71,
+      "UOM": null
+    },
+    {
+      "ITEM": "ALU SHADOWLINE WALL ANGLE SEISMIC 3600mm",
+      "RATE PER UOM": 17.72,
+      "UOM": null
+    },
+    {
+      "ITEM": "ALU S/LINE ANGLE SEISMIC 3600mm BLACK   ",
+      "RATE PER UOM": 17.72,
+      "UOM": null
+    },
+    {
+      "ITEM": "ALUMINIUM WALL ANGLE 20X20mm WHITE 3.6m ",
+      "RATE PER UOM": 34.14,
+      "UOM": null
+    },
+    {
+      "ITEM": "ALUMINIUM WALL ANGLE 25X35X3600 SEISMIC ",
+      "RATE PER UOM": 18.03,
+      "UOM": null
+    },
+    {
+      "ITEM": "ALU ANGLE 25X35X3600 SEISMIC BLACK      ",
+      "RATE PER UOM": 18.03,
+      "UOM": null
+    },
+    {
+      "ITEM": "SEISMIC ALU SHADOWLINE WALL ANGLE X 3600",
+      "RATE PER UOM": 33.2,
+      "UOM": null
+    },
+    {
+      "ITEM": "SEISMIC ALU S/LINE ANGLE X 3600mm BLACK ",
+      "RATE PER UOM": 52.35,
+      "UOM": null
+    },
+    {
+      "ITEM": "Armstrong PeakForm 24mm Cross Tee 1200mm",
+      "RATE PER UOM": 2.98,
+      "UOM": null
+    },
+    {
+      "ITEM": "Armstrong PeakForm 24mm Main Tee 3600mm ",
+      "RATE PER UOM": 8.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "Armstrong PeakForm 24mm Cross Tee 600mm ",
+      "RATE PER UOM": 1.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "BERC 2 CLIP                             ",
+      "RATE PER UOM": 4.02,
+      "UOM": null
+    },
+    {
+      "ITEM": "Armstrong Wall Angle 32x19mm x 3.6m     ",
+      "RATE PER UOM": 11.95,
+      "UOM": null
+    },
+    {
+      "ITEM": "SUSPENSION CLIP - HOOK TYPE             ",
+      "RATE PER UOM": 1.1,
+      "UOM": null
+    },
+    {
+      "ITEM": "ICCONS CONCRETE ANCHOR 6 mm X 60 mm     ",
+      "RATE PER UOM": 29.52,
+      "UOM": null
+    },
+    {
+      "ITEM": "ARMSTRONG FINE FISSURED 1200x600x15 7.2m",
+      "RATE PER UOM": 110.7,
+      "UOM": null
+    },
+    {
+      "ITEM": "ARMSTRONG FINE FISSURED 1200x600x16 7.2m",
+      "RATE PER UOM": 110.7,
+      "UOM": null
+    },
+    {
+      "ITEM": "ARMSTRONG DUNE RH99 1200x600x15 7.2m2   ",
+      "RATE PER UOM": 126.52,
+      "UOM": null
+    },
+    {
+      "ITEM": "IMPRESSIONS90 1200x600x16mm SQ 5.76m2   ",
+      "RATE PER UOM": 113.28,
+      "UOM": null
+    },
+    {
+      "ITEM": "10 mm FRESHTONE METRIC WRAPPED          ",
+      "RATE PER UOM": 10.63,
+      "UOM": null
+    },
+    {
+      "ITEM": "Freshtone - Diamond White (1200mm x 600mm nominal) textured white vinyl laminate tile",
+      "RATE PER UOM": 10.3,
+      "UOM": null
+    },
+    {
+      "ITEM": "OWA Finetta 1200x600x15mm Square Edge",
+      "RATE PER UOM": 11.5,
+      "UOM": null
+    },
+    {
+      "ITEM": "OWA Brillianto A 1200x600x15mm Square Edge (10)",
+      "RATE PER UOM": 15.42,
+      "UOM": null
+    },
+    {
+      "ITEM": "Supatone  - Paper Faced (1200mm x 600mm nominal) smooth white laminate tile           c",
+      "RATE PER UOM": 12.2,
+      "UOM": null
+    },
+    {
+      "ITEM": "INSULATION",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "No Insulation",
+      "RATE PER UOM": 0.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "11KG 1200X450X50mm 28/PK 15.12m2        ",
+      "RATE PER UOM": 57.25,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11KG 1200X600X50mm 28/PK 20.16m2        ",
+      "RATE PER UOM": 78.35,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11KG 1200X450X75mm 20/PK 10.80m2        ",
+      "RATE PER UOM": 56.95,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11KG 1200X600X75mm 20/PK 14.4m2         ",
+      "RATE PER UOM": 77.75,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14KG 1200X450X50mm 22/PK 11.88m2        ",
+      "RATE PER UOM": 57.9,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14KG 1200X600X50mm 22/PK 15.84m2        ",
+      "RATE PER UOM": 79.65,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14KG 1200X450X75mm 16/PK 8.10m2         ",
+      "RATE PER UOM": 55.2,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14KG 1200X600X75mm 15/PK 10.80m2        ",
+      "RATE PER UOM": 74.05,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R1.7 1160X430X60mm NOISE BREAK 6.48m2   ",
+      "RATE PER UOM": 71.05,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R1.7 1160X580X60mm NOISE BREAK 8.75m2   ",
+      "RATE PER UOM": 98.7,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R2.0 1160X430X70mm NOISE BREAK 4.99m2   ",
+      "RATE PER UOM": 57.4,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R2.0 1160X580X70mm NOISE BREAK 6.73m2   ",
+      "RATE PER UOM": 90.15,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R2.7 1160X430X90mm NOISE BREAK 3.99m2   ",
+      "RATE PER UOM": 71.4,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "R2.7 1160X580X90mm NOISE BREAK 4.71m2   ",
+      "RATE PER UOM": 88.5,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "FOIL FACED BLANKET 12mX1.2mX110mm 12m2  ",
+      "RATE PER UOM": 182.85,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "FOIL FACED BLANKET 15mX1.2mX60mm 18m2   ",
+      "RATE PER UOM": 121.42,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "FOIL FACED BLANKET 15mX1.2mX80mm 18m2   ",
+      "RATE PER UOM": 154.95,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "BAFFLE BLOCK 600X1200X100mm 8/PK 5.76m2 ",
+      "RATE PER UOM": 59.79,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11kg 50mm x 1200mm x 450mm 10.8m2       ",
+      "RATE PER UOM": 49.07,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11kg 50mm x 1200mm x 600mm 11.52m2      ",
+      "RATE PER UOM": 52.39,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11kg 75mm x 1200mm x 450mm 6.48m2       ",
+      "RATE PER UOM": 42.34,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "11kg 75mm x 1200mm x 600mm 6.48m2       ",
+      "RATE PER UOM": 42.4,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14kg 50mm x 1200mm x 450mm 8.1m2        ",
+      "RATE PER UOM": 47.56,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14kg 50mm x 1200mm x 600mm 8.64m2 R1.0  ",
+      "RATE PER UOM": 50.72,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14kg 75mm x 1200mm x 450mm 6.48m2       ",
+      "RATE PER UOM": 52.64,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "14kg 75mm x 1200mm x 600mm 6.48m2 R1.4  ",
+      "RATE PER UOM": 52.64,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "50mm POLYESTER HSB2 610mm 18.3m2        ",
+      "RATE PER UOM": 73.92,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "50mm POLYESTER HSB2 450mm 20.25m2       ",
+      "RATE PER UOM": 81.82,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "65mm POLYESTER HSB3 610mm 18.3m2        ",
+      "RATE PER UOM": 84.98,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "65mm POLYESTER HSB3 450mm 20.25m2       ",
+      "RATE PER UOM": 93.86,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "75mm POLYESTER HSB4 610mm 18.3m2        ",
+      "RATE PER UOM": 105.7,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "75mm POLYESTER HSB4 450mm 20.25m2       ",
+      "RATE PER UOM": 116.9,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "85mm POLYESTER HSB5 610mm 18.3m2        ",
+      "RATE PER UOM": 150.03,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "85mm POLYESTER HSB5 450mm 20.25m2       ",
+      "RATE PER UOM": 165.98,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "100mm POLYESTER HSB6 610mm 9.15m2       ",
+      "RATE PER UOM": 93.73,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "100mm POLYESTER HSB6 450mm 10.12m2      ",
+      "RATE PER UOM": 113.97,
+      "UOM": "m2"
+    },
+    {
+      "ITEM": "DOORS & STOP ENDS",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "SOLID FALCATA CORE DOOR 2690X920X35mm   ",
+      "RATE PER UOM": 320.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "FOAM FILLED DOOR 2400 X 920 X 35mm      ",
+      "RATE PER UOM": 230.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "FOAM FILLED DOOR 2690 X 920 X 35mm      ",
+      "RATE PER UOM": 235.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "FOAM FILLED DOOR 2100 X 920 X 35mm      ",
+      "RATE PER UOM": 220.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "76mm X 9mm X 2700 BLACK PACKER          ",
+      "RATE PER UOM": 15.58,
+      "UOM": null
+    },
+    {
+      "ITEM": "76mm X 9mm X 2700 WHITE PACKER          ",
+      "RATE PER UOM": 15.58,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 2700  64mm STUD 96mm     ",
+      "RATE PER UOM": 14.3,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 3600  64mm STUD 96mm     ",
+      "RATE PER UOM": 23.35,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 2700  76mm STUD 108mm    ",
+      "RATE PER UOM": 15.7,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 3600  76mm STUD 134mm    ",
+      "RATE PER UOM": 30.05,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 3600  76mm STUD 108mm    ",
+      "RATE PER UOM": 23.95,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 2700  92mm STUD 123mm    ",
+      "RATE PER UOM": 17.15,
+      "UOM": null
+    },
+    {
+      "ITEM": "MDF STOP END X 3600  92mm STUD  123mm   ",
+      "RATE PER UOM": 26.6,
+      "UOM": null
+    },
+    {
+      "ITEM": "CEILING ACCESS PANELS",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "200X200 FLANGED ACCESS HATCH STEEL DOOR ",
+      "RATE PER UOM": 23.3,
+      "UOM": null
+    },
+    {
+      "ITEM": "200X200 SET BEAD ACCESS HATCH STEEL DOOR",
+      "RATE PER UOM": 23.3,
+      "UOM": null
+    },
+    {
+      "ITEM": "300X300 FLANGED ACCESS HATCH MDF DOOR   ",
+      "RATE PER UOM": 29.29,
+      "UOM": null
+    },
+    {
+      "ITEM": "300X300 FLANGED ACCESS HATCH STEEL DOOR ",
+      "RATE PER UOM": 27.17,
+      "UOM": null
+    },
+    {
+      "ITEM": "300X300 SET BEAD ACCESS HATCH MDF DOOR  ",
+      "RATE PER UOM": 29.29,
+      "UOM": null
+    },
+    {
+      "ITEM": "300X300 SET BEAD ACCESS HATCH STEEL DOOR",
+      "RATE PER UOM": 27.17,
+      "UOM": null
+    },
+    {
+      "ITEM": "450X450 FLANGED ACCESS HATCH MDF DOOR   ",
+      "RATE PER UOM": 43.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "450X450 FLANGED ACCESS HATCH STEEL DOOR ",
+      "RATE PER UOM": 37.66,
+      "UOM": null
+    },
+    {
+      "ITEM": "450X450 SET BEAD ACCESS HATCH MDF DOOR  ",
+      "RATE PER UOM": 43.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "450X450 SET BEAD ACCESS HATCH STEEL DOOR",
+      "RATE PER UOM": 37.66,
+      "UOM": null
+    },
+    {
+      "ITEM": "550X550 FLANGED ACCESS HATCH MDF DOOR   ",
+      "RATE PER UOM": 58.47,
+      "UOM": null
+    },
+    {
+      "ITEM": "550X550 FLANGED ACCESS HATCH STEEL DOOR ",
+      "RATE PER UOM": 52.22,
+      "UOM": null
+    },
+    {
+      "ITEM": "550X550 SET BEAD ACCESS HATCH MDF DOOR  ",
+      "RATE PER UOM": 58.47,
+      "UOM": null
+    },
+    {
+      "ITEM": "550X550 SET BEAD ACCESS HATCH STEEL DOOR",
+      "RATE PER UOM": 52.22,
+      "UOM": null
+    },
+    {
+      "ITEM": "600X600 FLANGED ACCESS HATCH MDF DOOR   ",
+      "RATE PER UOM": 68.96,
+      "UOM": null
+    },
+    {
+      "ITEM": "600X600 FLANGED ACCESS HATCH STEEL DOOR ",
+      "RATE PER UOM": 62.66,
+      "UOM": null
+    },
+    {
+      "ITEM": "600X600 SET BEAD ACCESS HATCH MDF DOOR  ",
+      "RATE PER UOM": 68.96,
+      "UOM": null
+    },
+    {
+      "ITEM": "600X600 SET BEAD ACCESS HATCH STEEL DOOR",
+      "RATE PER UOM": 62.66,
+      "UOM": null
+    },
+    {
+      "ITEM": "ACCESSORIES",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "EZYCAP 76 STUD+13+13 X 2700 - 104mm     ",
+      "RATE PER UOM": 26.25,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 76 STUD+13+13 X 3600 -104mm      ",
+      "RATE PER UOM": 35.04,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 92 STUD+10+10 X 2700 - 112mm     ",
+      "RATE PER UOM": 26.25,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 92 STUD+10+10 X 3000 - 112mm     ",
+      "RATE PER UOM": 29.19,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 92 STUD+13+13 X 2700 - 118mm     ",
+      "RATE PER UOM": 28.74,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 92 STUD+13+13 X 3000 - 118mm     ",
+      "RATE PER UOM": 31.95,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 64 STUD+10+10 X 2700 - 86mm      ",
+      "RATE PER UOM": 24.83,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 64 STUD+13+13 X 2700 -92mm       ",
+      "RATE PER UOM": 26.25,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 64 STUD+13+13 X 3000 - 92mm      ",
+      "RATE PER UOM": 29.19,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 64 STUD+13+13 X 3600 - 92mm      ",
+      "RATE PER UOM": 35.04,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 76 STUD+10 +10 X 2700 - 98mm     ",
+      "RATE PER UOM": 26.25,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZYCAP 76 STUD+10 +10 X 3000 - 98mm     ",
+      "RATE PER UOM": 29.19,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 100mm x 3000                 ",
+      "RATE PER UOM": 19.83,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 100mm x 3600                 ",
+      "RATE PER UOM": 23.79,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 110mm x 3000                 ",
+      "RATE PER UOM": 21.31,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 110mm x 3600                 ",
+      "RATE PER UOM": 25.58,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 120mm x 3000                 ",
+      "RATE PER UOM": 22.23,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 135mm x 3000                 ",
+      "RATE PER UOM": 23.69,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 135mm x 3600                 ",
+      "RATE PER UOM": 28.43,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 150mm x 3000                 ",
+      "RATE PER UOM": 25.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 150mm x 3600                 ",
+      "RATE PER UOM": 31.1,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 180mm x 3000                 ",
+      "RATE PER UOM": 68.16,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 20mm x 3000                  ",
+      "RATE PER UOM": 15.14,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 200mm x 3000                 ",
+      "RATE PER UOM": 73.75,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 20mm x 3600                  ",
+      "RATE PER UOM": 18.19,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 25mm x 3000                  ",
+      "RATE PER UOM": 15.3,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 25mm x 3600                  ",
+      "RATE PER UOM": 18.35,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 30mm x 3000                  ",
+      "RATE PER UOM": 15.54,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 30mm x 3600                  ",
+      "RATE PER UOM": 18.66,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 35mm x 3000                  ",
+      "RATE PER UOM": 15.59,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 35mm x 3600                  ",
+      "RATE PER UOM": 18.74,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 40mm x 3000                  ",
+      "RATE PER UOM": 15.81,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 40mm x 3600                  ",
+      "RATE PER UOM": 18.98,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 45mm x 3000                  ",
+      "RATE PER UOM": 15.98,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 45mm x 3600                  ",
+      "RATE PER UOM": 19.17,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 50mm x 3000                  ",
+      "RATE PER UOM": 16.13,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 50mm x 3600                  ",
+      "RATE PER UOM": 19.35,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 60mm x 3000                  ",
+      "RATE PER UOM": 16.29,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 65mm x 3000                  ",
+      "RATE PER UOM": 16.37,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 65mm x 3600                  ",
+      "RATE PER UOM": 19.63,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 75mm x 3000                  ",
+      "RATE PER UOM": 17.51,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 80mm x 3000                  ",
+      "RATE PER UOM": 17.85,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 90mm x 3000                  ",
+      "RATE PER UOM": 18.23,
+      "UOM": null
+    },
+    {
+      "ITEM": "EZY REVEAL 90mm x 3600                  ",
+      "RATE PER UOM": 21.88,
+      "UOM": null
+    },
+    {
+      "ITEM": "237 WALL CLIPS FOR FURRING CHANNEL      ",
+      "RATE PER UOM": 0.56,
+      "UOM": null
+    },
+    {
+      "ITEM": "THREADED WALL CLIPS FOR FURRING CHANNEL ",
+      "RATE PER UOM": 0.83,
+      "UOM": null
+    },
+    {
+      "ITEM": "DIRECT FIX CLIP w 120mm TRUBOLT         ",
+      "RATE PER UOM": 2.28,
+      "UOM": null
+    },
+    {
+      "ITEM": "JUNCTION STUD BRACKET 55X47X55X1.9      ",
+      "RATE PER UOM": 4.04,
+      "UOM": null
+    },
+    {
+      "ITEM": "ANGLE BRACKET 100 x 45mm x 1.15 BMT     ",
+      "RATE PER UOM": 1.09,
+      "UOM": null
+    },
+    {
+      "ITEM": "HEDA CONNECTOR                          ",
+      "RATE PER UOM": 5.28,
+      "UOM": null
+    },
+    {
+      "ITEM": "STAGGERED STUD CLIP                     ",
+      "RATE PER UOM": 1.29,
+      "UOM": null
+    },
+    {
+      "ITEM": "237 WALL CLIPS w RESILIANT MOUNT - F/C  ",
+      "RATE PER UOM": 3.17,
+      "UOM": null
+    },
+    {
+      "ITEM": "DIRECT FIX CLIPS SHORT                  ",
+      "RATE PER UOM": 0.39,
+      "UOM": null
+    },
+    {
+      "ITEM": "M272 M27/M25 TCR JOINER                 ",
+      "RATE PER UOM": 0.83,
+      "UOM": null
+    },
+    {
+      "ITEM": "M29 JOINER - F/C JOINER                 ",
+      "RATE PER UOM": 0.44,
+      "UOM": null
+    },
+    {
+      "ITEM": "LOCKING KEY TCR TO F/CHANNEL M39        ",
+      "RATE PER UOM": 0.36,
+      "UOM": null
+    },
+    {
+      "ITEM": "RIGHT ANGLED ROD BRACKET SUIT SCREW BOLT",
+      "RATE PER UOM": 0.36,
+      "UOM": null
+    },
+    {
+      "ITEM": "RIGHT ANGLED ROD BRACKET                ",
+      "RATE PER UOM": 0.36,
+      "UOM": null
+    },
+    {
+      "ITEM": "RESILIENT MOUNT RIGHT ANGLE BRACKET     ",
+      "RATE PER UOM": 3.97,
+      "UOM": null
+    },
+    {
+      "ITEM": "ISOLATION HANGER ROD/ROD  (RED)         ",
+      "RATE PER UOM": 8.68,
+      "UOM": null
+    },
+    {
+      "ITEM": "SIDE MOUNT SPRING HANGER                ",
+      "RATE PER UOM": 1.13,
+      "UOM": null
+    },
+    {
+      "ITEM": "ADJUSTABLE SPRING HANGER FOR TCR  2534  ",
+      "RATE PER UOM": 1.07,
+      "UOM": null
+    },
+    {
+      "ITEM": "UNIVERSAL L BRACKET X 1.5mm             ",
+      "RATE PER UOM": 3.99,
+      "UOM": null
+    },
+    {
+      "ITEM": "RESILMOUNT RESILIENT CHANNEL 3658mm     ",
+      "RATE PER UOM": 14.77,
+      "UOM": null
+    },
+    {
+      "ITEM": "M27/M28 DIRECT FIX TCR                  ",
+      "RATE PER UOM": 1.77,
+      "UOM": null
+    },
+    {
+      "ITEM": "FLAT SUSPENSION ROD BRACKET             ",
+      "RATE PER UOM": 0.36,
+      "UOM": null
+    },
+    {
+      "ITEM": "NOGGIN BRACKET 18mm INTERMEDIATE        ",
+      "RATE PER UOM": 2.53,
+      "UOM": null
+    },
+    {
+      "ITEM": "NOGGIN BRACKET 18mm END                 ",
+      "RATE PER UOM": 2.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "DIRECT FIX WALL CLIP BATTEN             ",
+      "RATE PER UOM": 0.91,
+      "UOM": null
+    },
+    {
+      "ITEM": "M88 CLIP                                ",
+      "RATE PER UOM": 0.37,
+      "UOM": null
+    },
+    {
+      "ITEM": "DIRECT FIX CLIPS LONG                   ",
+      "RATE PER UOM": 0.97,
+      "UOM": null
+    },
+    {
+      "ITEM": "FURRING CHANNEL TO PURLIN RESIL MOUNT   ",
+      "RATE PER UOM": 4.99,
+      "UOM": null
+    },
+    {
+      "ITEM": "BETTER FIX CLIP STANDARD                ",
+      "RATE PER UOM": 1.78,
+      "UOM": null
+    },
+    {
+      "ITEM": "BETTER FIX CLIP EXTRA LONG              ",
+      "RATE PER UOM": 3.84,
+      "UOM": null
+    },
+    {
+      "ITEM": "BETTER FIX CLIP LONG                    ",
+      "RATE PER UOM": 2.42,
+      "UOM": null
+    },
+    {
+      "ITEM": "RESILIENT MOUNT BETTER FIX CLIP         ",
+      "RATE PER UOM": 3.33,
+      "UOM": null
+    },
+    {
+      "ITEM": "RESILIENT MOUNT BETTER FIX CLIP 6.5 BOLT",
+      "RATE PER UOM": 3.79,
+      "UOM": null
+    },
+    {
+      "ITEM": "ADJUSTABLE ROD JOINER                   ",
+      "RATE PER UOM": 1.03,
+      "UOM": null
+    },
+    {
+      "ITEM": "48mm FOAM TAPE X 25m                    ",
+      "RATE PER UOM": 111.0,
+      "UOM": null
+    },
+    {
+      "ITEM": "BLACK BACKING STRIP 0.55BMT x 50 x 3000m",
+      "RATE PER UOM": 14.63,
+      "UOM": null
+    },
+    {
+      "ITEM": "5 mm GALVANISED STEEL ROD X 3600 mm     ",
+      "RATE PER UOM": 3.97,
+      "UOM": null
+    },
+    {
+      "ITEM": "RUBBER IMPACT MAT 50X50X10mm            ",
+      "RATE PER UOM": 3.08,
+      "UOM": null
+    },
+    {
+      "ITEM": "CORNICE",
+      "RATE PER UOM": null,
+      "UOM": null,
+      "type": "heading"
+    },
+    {
+      "ITEM": "55mm Cove Cornice",
+      "RATE PER UOM": 2.5,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75mm Cove Cornice",
+      "RATE PER UOM": 2.7,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "90mm Cove Cornice most popular cove cornice",
+      "RATE PER UOM": 2.9,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "90mm Gyprock Tempo Cornice",
+      "RATE PER UOM": 4.98,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75mm Gyprock Symphony Cornice",
+      "RATE PER UOM": 4.98,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "90mm Gyprock Concerto Cornice",
+      "RATE PER UOM": 5.07,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75mm Gyprock TrioTM Cornice",
+      "RATE PER UOM": 4.86,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "90mm Gyprock Alto\u2122 Cornice",
+      "RATE PER UOM": 4.95,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "75mm Gyprock Aria\u2122 Cornice",
+      "RATE PER UOM": 5.0,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "50mm Duo Cornice 4800 NQVS",
+      "RATE PER UOM": 4.7,
+      "UOM": "lm"
+    },
+    {
+      "ITEM": "90mm Presto Cornice (90mm X 15mm 4800)",
+      "RATE PER UOM": 5.3,
+      "UOM": "lm"
+    }
+  ],
+  "CALC": [],
+  "LISTS": [
+    {
+      "Stock_Lengths_mm": 2400,
+      "Labour_Level": "Low",
+      "Hoisting_Access": "Easy",
+      "Sheet_Type": "Standard",
+      "YesNo": "Yes",
+      "Stud_Spacing_mm": 450.0,
+      "Noggin_Centres_mm": null
+    },
+    {
+      "Stock_Lengths_mm": 2700,
+      "Labour_Level": "Medium",
+      "Hoisting_Access": "Moderate",
+      "Sheet_Type": "Non-Standard",
+      "YesNo": "No",
+      "Stud_Spacing_mm": 600.0,
+      "Noggin_Centres_mm": 450.0
+    },
+    {
+      "Stock_Lengths_mm": 3000,
+      "Labour_Level": "High",
+      "Hoisting_Access": "Difficult",
+      "Sheet_Type": null,
+      "YesNo": null,
+      "Stud_Spacing_mm": null,
+      "Noggin_Centres_mm": 600.0
+    },
+    {
+      "Stock_Lengths_mm": 3600,
+      "Labour_Level": null,
+      "Hoisting_Access": null,
+      "Sheet_Type": null,
+      "YesNo": null,
+      "Stud_Spacing_mm": null,
+      "Noggin_Centres_mm": null
+    },
+    {
+      "Stock_Lengths_mm": 4200,
+      "Labour_Level": null,
+      "Hoisting_Access": null,
+      "Sheet_Type": null,
+      "YesNo": null,
+      "Stud_Spacing_mm": null,
+      "Noggin_Centres_mm": null
+    },
+    {
+      "Stock_Lengths_mm": 4800,
+      "Labour_Level": null,
+      "Hoisting_Access": null,
+      "Sheet_Type": null,
+      "YesNo": null,
+      "Stud_Spacing_mm": null,
+      "Noggin_Centres_mm": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "access": {
+    "good": 1.0,
+    "average": 1.1,
+    "poor": 1.25,
+    "easy": 1.0,
+    "moderate": 1.1,
+    "difficult": 1.25
+  },
+  "yes_no": {
+    "yes": true,
+    "no": false
+  }
+}

@@ -1,0 +1,421 @@
+{
+  "version": "1.0.0",
+  "scope": [
+    "Walls",
+    "Ceilings",
+    "Glazing",
+    "Doors",
+    "CarpentryMisc",
+    "Preliminaries"
+  ],
+  "style": {
+    "units": {
+      "length": "m",
+      "area": "m2",
+      "count": "no.",
+      "lm": "lm"
+    },
+    "enum_normalisation": {
+      "access": {
+        "good": 1.0,
+        "average": 1.1,
+        "poor": 1.25,
+        "easy": 1.0,
+        "moderate": 1.1,
+        "difficult": 1.25
+      },
+      "yes_no": {
+        "yes": true,
+        "no": false
+      },
+      "hoisting": {
+        "heavy": "H",
+        "light": "L"
+      }
+    },
+    "defaults": {
+      "waste": {
+        "steel_linear": 1.2,
+        "face": 1.05
+      },
+      "decals_coverage": 0.3,
+      "max_studs_per_lm": 6
+    },
+    "factors": {
+      "applied_factor": "1 + (applied_percent/100)",
+      "regional_factor": "1 + (regional_percent/100)"
+    },
+    "error_policy": "If a rate lookup or key is missing, use 0 and continue; surface a short warning once per line item."
+  },
+  "helpers": {
+    "coerce_number": "Trim text, remove ' m' or 'm', remove commas, VALUE() or parseFloat; if error -> 0",
+    "mm_to_m": "m_val = (mm_val < 10 ? mm_val : mm_val/1000)",
+    "access_multiplier": "am = enum_normalisation.access[lower(trim(input))] || 1.0",
+    "factor_applied": "AF = 1 + (applied_percent||0)/100",
+    "factor_regional": "RF = 1 + (regional_percent||0)/100",
+    "blank0": "IFERROR(value,0)"
+  },
+  "lookups": {
+    "keys": {
+      "StudKey": "StudWidth + '-' + (StudBMT==0.55?0.50:StudBMT)",
+      "TrackKey": "StudWidth + '-' + (StudBMT==0.55?0.50:StudBMT)",
+      "DeflKey": "DeflectionType + '-' + StudKey",
+      "LiningKeyA": "LiningSpecA",
+      "LiningKeyB": "LiningSpecB",
+      "InsKey": "InsulationSpec",
+      "CeilSystemKey": "Vendor + '-' + System + '-' + SpacingTuple",
+      "DoorFrameKey": "FrameType + '-' + FrameFinish",
+      "GlassKey": "GlassSpec",
+      "GlazingFrameFinishKey": "System + '-' + Finish"
+    },
+    "policy": "XLOOKUP or dictionary get; IFERROR->0"
+  },
+  "walls": {
+    "inputs": [
+      "WALL ID",
+      "WALL QTY (lm)",
+      "FRAME HEIGHT (m)",
+      "STUD SPACING (mm)",
+      "STUD WIDTH (mm)",
+      "STUD BMT (mm)",
+      "LINING - SIDE A HEIGHT (m)",
+      "LINING - SIDE A (spec)",
+      "LINING - SIDE A (count)",
+      "LINING - SIDE B HEIGHT (m)",
+      "LINING - SIDE B (spec)",
+      "LINING - SIDE B (count)",
+      "INSULATION (spec)",
+      "ACCESSORIES (Standard, Non-standard)",
+      "ACCESS / HOISTING (Good, Average, Poor)",
+      "APPLIED FACTOR - SPECIFY (%)",
+      "DEFLECTION TYPE (Track, Def Head, Slotted Def Head)"
+    ],
+    "drivers": {
+      "L": "WALL QTY (lm)",
+      "H": "FRAME HEIGHT (m)",
+      "S": "MIN(CEILING(1000/STUD SPACING (mm)), defaults.max_studs_per_lm)",
+      "WasteSteel": "L<3?1.05:style.defaults.waste.steel_linear",
+      "WasteFace": "(L*H)<10?1.03:style.defaults.waste.face",
+      "AreaA": "L * [LINING - SIDE A HEIGHT (m)] * [LINING - SIDE A (count)]",
+      "AreaB": "L * [LINING - SIDE B HEIGHT (m)] * [LINING - SIDE B (count)]",
+      "AreaLin": "AreaA + AreaB",
+      "AreaIns": "MIN(L*H, AreaLin)",
+      "StudLen": "S * L * H",
+      "DeflLen": "L * WasteSteel",
+      "TrackLen": "L * WasteSteel",
+      "NogRows": "IF(H<=3.0,0, IF(H<=4.2,1, IF(H<=6.0,2,2)))",
+      "NogLen": "L * WasteSteel * NogRows",
+      "AM": "helpers.access_multiplier([ACCESS / HOISTING (Good, Average, Poor)])",
+      "StudWidth": "[STUD WIDTH (mm)]",
+      "StudBMT": "[STUD BMT (mm)]",
+      "LiningSpecA": "[LINING - SIDE A (spec)]",
+      "LiningSpecB": "[LINING - SIDE B (spec)]",
+      "InsulationSpec": "[INSULATION (spec)]",
+      "DeflectionType": "[DEFLECTION TYPE (Track, Def Head, Slotted Def Head)]"
+    },
+    "pricing": {
+      "materials": {
+        "STUD_$": "StudLen * Rate(StudKey, Rates_Stud[$/m])",
+        "DEFLECTION_HEAD_$": "DeflLen * Rate(DeflKey, Rates_Defl[$/m])",
+        "WALL_TRACK_$": "TrackLen * Rate(TrackKey, Rates_Track[$/m])",
+        "NOGGIN_$": "NogLen * Rate(TrackKey, Rates_Nog[$/m])",
+        "SIDE_A_$": "AreaA * Rate(LiningKeyA, Rates_Lining[$/m2])",
+        "SIDE_B_$": "AreaB * Rate(LiningKeyB, Rates_Lining[$/m2])",
+        "INSULATION_$": "AreaIns * Rate(InsKey, Rates_Ins[$/m2])",
+        "ACCESSORIES_$": "L * ( Accessories==\"Standard\" ? Rate('Std',Rates_Access[$/lm_std]) : Rate('NonStd',Rates_Access[$/lm_non]) )"
+      },
+      "labour": {
+        "FRAME_LABOUR_$": "AM * ( StudLen*Rate('Frame_$per_mStud',Lab) + DeflLen*Rate('Defl_$per_m',Lab) + TrackLen*Rate('Track_$per_m',Lab) + NogLen*Rate('Nog_$per_m',Lab) )",
+        "HANG_$": "AM * AreaLin * Rate('Hang_$per_m2',Lab)",
+        "SET_SAND_$": "AM * AreaLin * Rate('Set_$per_m2',Lab)",
+        "INSULATION_LABOUR_$": "AM * AreaIns * Rate('Ins_$per_m2',Lab)",
+        "HOISTING_$": "AM * AreaLin * Rate('Hoist_$per_m2',Lab)"
+      },
+      "totals": {
+        "BASE_$": "SUM(all materials + all labour)",
+        "AF": "helpers.factor_applied(applied_percent)",
+        "TOTAL_$": "BASE_$ * AF",
+        "$_per_lm": "IF(L>0, TOTAL_$/L, 0)",
+        "$_per_m2": "$_per_lm * H"
+      }
+    }
+  },
+  "ceilings": {
+    "shared": {
+      "A": "CEILING QTY (m\u00b2/lm/no.)",
+      "AFFL": "CEILING HEIGHT (AFFL) (m)",
+      "AM": "helpers.access_multiplier([ACCESS / HOISTING (Good, Average, Poor)])",
+      "RF": "helpers.factor_regional(REGIONAL / DELIVERIES FACTOR (%))",
+      "WasteFace": "A<6?1.03:style.defaults.waste.face",
+      "WasteSteel": "A<12?1.10:style.defaults.waste.steel_linear",
+      "Hangers_per_m2": "IF(AFFL<=3.3,0.70, IF(AFFL<=4.2,0.85,1.00))",
+      "TopSpacing_m": "1.2",
+      "FurrSpacing_m": "0.6",
+      "AF": "helpers.factor_applied([APPLIED FACTOR - SPECIFY (%)])"
+    },
+    "flush_or_feature": {
+      "drivers": {
+        "Hangers_no": "A * Hangers_per_m2",
+        "TopLen_m": "(A/TopSpacing_m) * WasteSteel",
+        "FurrLen_m": "(A/FurrSpacing_m) * WasteSteel",
+        "PerimLen_m": "MAX( (SQRT(A)*4*0.35), A*0.50 ) * WasteSteel",
+        "Area_face": "A * WasteFace",
+        "Area_ins": "A",
+        "LiningSpec": "[LINING (spec)]",
+        "InsSpec": "[INSULATION (spec)]"
+      },
+      "pricing": {
+        "materials": {
+          "HANGERS_$": "Hangers_no * Rate('Hanger_$per_no', Ceil)",
+          "TOP_$": "TopLen_m * Rate('Top_$per_m', Ceil)",
+          "FURR_$": "FurrLen_m * Rate('Furr_$per_m', Ceil)",
+          "PERIM_$": "PerimLen_m * Rate('Perim_$per_m', Ceil)",
+          "LINING_$": "Area_face * Rate(LiningSpec, Rates_Lining[$/m2])",
+          "INSULATION_$": "Area_ins * Rate(InsSpec, Rates_Ins[$/m2])",
+          "ACCESSORIES_$": "A * ( Accessories==\"Standard\" ? Rate('AccStd_$per_m2', Ceil) : Rate('AccNon_$per_m2', Ceil) )"
+        },
+        "labour": {
+          "HANGERS_LAB_$": "AM*Hangers_no*Rate('Hanger_$per_no', Lab)",
+          "TOP_LAB_$": "AM*TopLen_m*Rate('Top_$per_m', Lab)",
+          "FURR_LAB_$": "AM*FurrLen_m*Rate('Furr_$per_m', Lab)",
+          "PERIM_LAB_$": "AM*PerimLen_m*Rate('Perim_$per_m', Lab)",
+          "FIXHANG_LAB_$": "AM*Area_face*Rate('FixHang_$per_m2', Lab)",
+          "SETSAND_LAB_$": "AM*Area_face*Rate('SetSand_$per_m2', Lab)",
+          "HOIST_LAB_$": "AM*A*Rate('Hoist_$per_m2', Lab)"
+        },
+        "totals": {
+          "TOTAL_$": "SUM(all materials + labour) * RF",
+          "$_per_m2": "IF(A>0, TOTAL_$/A, 0)"
+        }
+      }
+    },
+    "grid_tile": {
+      "drivers": {
+        "Hangers_no": "A * Hangers_per_m2",
+        "MainLen_m": "(A/TopSpacing_m) * WasteSteel",
+        "CrossLen_m": "(A/FurrSpacing_m) * WasteSteel",
+        "PerimLen_m": "MAX( (SQRT(A)*4*0.35), A*0.50 ) * WasteSteel",
+        "Area_tile": "A * WasteFace",
+        "Area_ins": "A",
+        "TileSpec": "[TILE (spec)]",
+        "InsSpec": "[INSULATION (spec)]"
+      },
+      "pricing": {
+        "materials": {
+          "HANGERS_$": "Hangers_no * Rate('Hanger_$per_no', Grid)",
+          "MAIN_$": "MainLen_m * Rate('Main_$per_m', Grid)",
+          "CROSS_$": "CrossLen_m * Rate('Cross_$per_m', Grid)",
+          "PERIM_$": "PerimLen_m * Rate('Perim_$per_m', Grid)",
+          "TILES_$": "Area_tile * Rate(TileSpec, Rates_Tiles[$/m2])",
+          "INSULATION_$": "Area_ins * Rate(InsSpec, Rates_Ins[$/m2])"
+        },
+        "labour": {
+          "HANGERS_LAB_$": "AM*Hangers_no*Rate('Hanger_$per_no', Lab)",
+          "MAIN_LAB_$": "AM*MainLen_m*Rate('Main_$per_m', Lab)",
+          "CROSS_LAB_$": "AM*CrossLen_m*Rate('Cross_$per_m', Lab)",
+          "PERIM_LAB_$": "AM*PerimLen_m*Rate('Perim_$per_m', Lab)",
+          "TILEFIX_LAB_$": "AM*Area_tile*Rate('TileFix_$per_m2', Lab)",
+          "HOIST_LAB_$": "AM*A*Rate('Hoist_$per_m2', Lab)"
+        },
+        "totals": {
+          "TOTAL_$": "SUM(all materials + labour) * RF",
+          "$_per_m2": "IF(A>0, TOTAL_$/A, 0)"
+        }
+      }
+    },
+    "bulkhead": {
+      "drivers": {
+        "L": "CEILING QTY (m\u00b2/lm/no.)",
+        "HB": "BULKHEAD HEIGHT (m)",
+        "WB": "BULKHEAD WIDTH (m)",
+        "A_face": "L*HB",
+        "A_soffit": "L*WB",
+        "A_tot": "(A_face + A_soffit) * style.defaults.waste.face",
+        "Hangers_no": "IF(WB>0, A_soffit*Hangers_per_m2, 0)",
+        "TopLen_m": "(A_tot/TopSpacing_m) * WasteSteel",
+        "FurrLen_m": "(A_tot/FurrSpacing_m) * WasteSteel",
+        "PerimLen_m": "L*2*WasteSteel"
+      },
+      "pricing": {
+        "materials": {
+          "TOP_$": "TopLen_m * Rate('Top_$per_m', Ceil)",
+          "FURR_$": "FurrLen_m * Rate('Furr_$per_m', Ceil)",
+          "HANGERS_$": "Hangers_no * Rate('Hanger_$per_no', Ceil)",
+          "PERIM_$": "PerimLen_m * Rate('Perim_$per_m', Ceil)",
+          "LINING_$": "A_tot * Rate(LiningSpec, Rates_Lining[$/m2])",
+          "INSULATION_$": "(A_face + A_soffit) * Rate(InsSpec, Rates_Ins[$/m2])"
+        },
+        "labour": {
+          "TOP_LAB_$": "AM*TopLen_m*Rate('Top_$per_m', Lab)",
+          "FURR_LAB_$": "AM*FurrLen_m*Rate('Furr_$per_m', Lab)",
+          "HANGERS_LAB_$": "AM*Hangers_no*Rate('Hanger_$per_no', Lab)",
+          "PERIM_LAB_$": "AM*PerimLen_m*Rate('Perim_$per_m', Lab)",
+          "FIXHANG_LAB_$": "AM*A_tot*Rate('FixHang_$per_m2', Lab)",
+          "SETSAND_LAB_$": "AM*A_tot*Rate('SetSand_$per_m2', Lab)",
+          "HOIST_LAB_$": "AM*A_tot*Rate('Hoist_$per_m2', Lab)"
+        },
+        "totals": {
+          "TOTAL_$": "SUM(all materials + labour) * RF",
+          "$_per_lm": "IF(L>0, TOTAL_$/L, 0)"
+        }
+      }
+    },
+    "access_panel": {
+      "drivers": {
+        "N": "CEILING QTY (m\u00b2/lm/no.)",
+        "AF": "helpers.factor_applied([APPLIED FACTOR - SPECIFY (%)])"
+      },
+      "pricing": {
+        "materials": {
+          "PANEL_SUPPLY_$": "N * Rate(APKey, Rates_AccessPanel[$/no])"
+        },
+        "labour": {
+          "INSTALL_$": "AM * N * Rate(InstallType, Lab_AP[$/no])",
+          "HOIST_$": "AM * N * Rate('Hoist_$per_no', Lab)"
+        },
+        "totals": {
+          "TOTAL_$": "(SUM(materials + labour) * RF) * AF",
+          "$_per_no": "IF(N>0, TOTAL_$/N, 0)"
+        }
+      }
+    }
+  },
+  "glazing": {
+    "inputs": [
+      "GLAZING ID",
+      "DESCRIPTION",
+      "FRAMING SYSTEM (spec)",
+      "TOP & BOTTOM FRAMES (lm)",
+      "HORIZONTAL FRAMES",
+      "VERTICAL FRAMES (no.)",
+      "VERTICAL FRAME HEIGHT",
+      "FRAME FINISH (Anodised Or P/Coated)",
+      "GLASS (spec)",
+      "DECALS (Yes / No)",
+      "ACCESS / HOISTING (Good, Average, Poor)",
+      "APPLIED FACTOR - SPECIFY (%)"
+    ],
+    "drivers": {
+      "LTB": "TOP & BOTTOM FRAMES (lm)",
+      "W": "MAX(LTB/2,0)",
+      "H": "VERTICAL FRAME HEIGHT",
+      "RowsH": "IFERROR(HORIZONTAL FRAMES,0)",
+      "Vn": "IFERROR(VERTICAL FRAMES (no.),0)",
+      "HorzLen": "RowsH * W",
+      "VertLen": "Vn * H",
+      "FrameLen": "LTB + HorzLen + VertLen",
+      "A_glass": "W * H",
+      "DecalArea": "IF(DECALS=='Yes', A_glass * style.defaults.decals_coverage, 0)",
+      "AM": "helpers.access_multiplier(ACCESS / HOISTING)",
+      "AF": "helpers.factor_applied(APPLIED FACTOR - SPECIFY (%))"
+    },
+    "pricing": {
+      "materials": {
+        "HEAD_SILL_$": "LTB * Rate(GlazingFrameFinishKey, Rates_Glz_HeadSill[$/m])",
+        "HORIZONTAL_$": "HorzLen * Rate(GlazingFrameFinishKey, Rates_Glz_Horz[$/m])",
+        "VERTICAL_$": "VertLen * Rate(GlazingFrameFinishKey, Rates_Glz_Vert[$/m])",
+        "GLASS_$": "A_glass * Rate(GlassKey, Rates_Glass[$/m2])",
+        "DECALS_$": "DecalArea * Rate('Decal_$per_m2', Rates_Glass)"
+      },
+      "labour": {
+        "FRAME_LABOUR_$": "AM * FrameLen * Rate('Glz_FrameInstall_$per_m', Lab)",
+        "GLAZE_LABOUR_$": "AM * A_glass * Rate('Glaze_SetSeal_$per_m2', Lab)",
+        "HOIST_LABOUR_$": "AM * A_glass * Rate('Hoist_$per_m2', Lab)"
+      },
+      "totals": {
+        "TOTAL_$": "SUM(all materials + labour) * AF",
+        "$_per_m2_glass": "IF(A_glass>0, TOTAL_$/A_glass, 0)"
+      }
+    }
+  },
+  "doors": {
+    "inputs": [
+      "DOOR ID",
+      "DESCRIPTION",
+      "OPERATION (Swing, Sliding)",
+      "LEAF TYPE (spec)",
+      "LEAF WIDTH (mm)",
+      "LEAF HEIGHT (mm)",
+      "LEAF THICKNESS (mm)",
+      "FRAME TYPE (spec)",
+      "FRAME FINISH (spec)",
+      "HARDWARE SETUP",
+      "GLAZING SUMMARY (Yes / No)",
+      "APPLIED FACTOR - SPECIFY (%)",
+      "HARDWARE SUPPLY ALLOWANCE, SOURCE (text), VALUE ($)"
+    ],
+    "drivers": {
+      "Wm": "LEAF WIDTH (mm)/1000",
+      "Hm": "LEAF HEIGHT (mm)/1000",
+      "A_leaf": "Wm*Hm",
+      "Perim": "IF(op=='swing', 2*Hm+Wm, IF(op=='sliding', Hm+Wm, 2*Hm+Wm))",
+      "TrackLen": "IF(op=='sliding', Wm*1.10, 0)",
+      "A_leaf_glass": "IF(GLAZING SUMMARY=='Yes', A_leaf*0.70, 0)",
+      "AF": "helpers.factor_applied(APPLIED FACTOR - SPECIFY (%))",
+      "op": "LOWER([OPERATION (Swing, Sliding)])"
+    },
+    "pricing": {
+      "materials": {
+        "LEAF_SUPPLY_$": "A_leaf * Rate(LeafSpec, Rates_DoorLeaf[$/m2])",
+        "FRAME_SUPPLY_$": "Perim * Rate(DoorFrameKey, Rates_DoorFrame[$/m])",
+        "HARDWARE_SUPPLY_$": "IF(HW_LS_entered, HW_LS_value, Rate(HardwareSetup, Rates_Hardware[$/set]))",
+        "SLIDING_TRACK_$": "TrackLen * Rate('SlidingTrack_$per_m', Rates_Door)",
+        "SEALS_$": "Perim * Rate(SealLevel, Rates_Seals[$/m])",
+        "DOOR_GLAZING_$": "A_leaf_glass * Rate(GlazingSpec, Rates_Glazing[$/m2])"
+      },
+      "labour": {
+        "FRAME_INSTALL_$": "Perim * Rate('Door_FrameInstall_$per_m', Lab)",
+        "HANG_LEAF_$": "1 * Rate('Door_HangLeaf_$per_no', Lab)",
+        "HARDWARE_LABOUR_$": "IF(HW_LS_entered, Rate('Hardware_Fit_LS_$', Lab), Rate('Hardware_Fit_$per_set', Lab))",
+        "SLIDING_TRACK_INSTALL_$": "TrackLen * Rate('SlidingTrack_Install_$per_m', Lab)",
+        "SEALS_LABOUR_$": "Perim * Rate('Seal_Fit_$per_m', Lab)",
+        "GLAZE_LABOUR_$": "A_leaf_glass * Rate('Glaze_Set_$per_m2', Lab)"
+      },
+      "totals": {
+        "TOTAL_$": "SUM(all materials + labour) * AF",
+        "$_per_leaf": "TOTAL_$",
+        "$_per_m2_leaf": "IF(A_leaf>0, TOTAL_$/A_leaf, 0)"
+      }
+    }
+  },
+  "carpentry_misc": {
+    "items": {
+      "SKIRTING_SUPPLY_$": "Skirting_lm * Rate(SkirtingSpec, Rates_Skirting[$/m])",
+      "SKIRTING_INSTALL_$": "Skirting_lm * Rate('SkirtingInstall_$per_m', Lab)",
+      "NOGGINS_SUPPLY_$": "Noggins_no * Rate('Noggin_$per_no', Mat)",
+      "NOGGINS_INSTALL_$": "Noggins_no * Rate('NogginFix_$per_no', Lab)",
+      "FFE_INSTALL_$": "FFE_hours * Rate('FFE_$per_h', Lab)",
+      "PATCH_MAKEGOOD_$": "Patch_hours * Rate('Patch_$per_h', Lab)",
+      "MISC_MAT_$": "Misc_qty * Rate('MiscMat_$per_UOM', Mat)",
+      "OTHER_$": "Other_qty * Rate('Other_$per_UOM', Mat)",
+      "OTHER_LAB_$": "Other_qty * Rate('Other_Lab_$per_UOM', Lab)"
+    },
+    "total": "SUM(all items)"
+  },
+  "preliminaries": {
+    "lines": {
+      "SUNDRY_LABOUR_$": "SumRoleHours * Rate(Role, Lab)",
+      "CONSULTANTS_$": "SUM(each LS)",
+      "PLANT_EQUIP_$": "Hire_days * Rate('LiftHire_$per_day', Hire) + Float_LS * 1 + Tools_weeks * Rate('Tools_$per_week', Hire)",
+      "TRAVEL_ACCOM_$": "Nights*Rate('Accom_$per_night', Cost) + KMs*Rate('Travel_$per_km', Cost) + Travel_LS",
+      "OTHER_$": "Other_qty * Rate('OtherPrelim_$per_UOM', Cost)"
+    },
+    "total": "SUM(all lines)"
+  },
+  "qa_flags": {
+    "Walls": [
+      "If([LINING - SIDE A HEIGHT (m)] > [FRAME HEIGHT (m)]) -> 'A>Frame'",
+      "If([LINING - SIDE B HEIGHT (m)] > [FRAME HEIGHT (m)]) -> 'B>Frame'"
+    ],
+    "Ceilings": [
+      "If(A < 6) -> 'check perimeter allowance'"
+    ],
+    "Glazing": [
+      "If(LTB<=0 || H<=0) -> 'glazing dims?'",
+      "If(A_glass<=0) -> 'glass area 0'"
+    ],
+    "Doors": [
+      "If([LEAF WIDTH (mm)]<=0 || [LEAF HEIGHT (mm)]<=0) -> 'door dims?'"
+    ]
+  }
+}
